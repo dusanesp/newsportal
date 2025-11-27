@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/layout :: head(title='Register')"></head>
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+    <nav th:replace="fragments/layout :: header"></nav>
+
+    <div class="container mx-auto flex justify-center items-center grow py-12">
+        <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Register</h2>
+
+            <div th:if="${error}" class="mb-4 p-3 bg-red-100 text-red-700 rounded text-center" th:text="${error}">
+                Error message
+            </div>
+
+            <form th:action="@{/register}" th:object="${user}" method="post">
+                <div class="mb-4">
+                    <label for="login" class="block text-gray-700 font-bold mb-2">Username</label>
+                    <input type="text" id="login" th:field="*{login}"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
+                    <input type="password" id="password" th:field="*{password}"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required>
+                </div>
+                <div class="mb-4">
+                    <label for="name" class="block text-gray-700 font-bold mb-2">Full Name</label>
+                    <input type="text" id="name" th:field="*{name}"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required>
+                </div>
+                <div class="mb-6">
+                    <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
+                    <input type="email" id="email" th:field="*{email}"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required>
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">Register</button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <a href="/login" class="text-blue-600 hover:underline">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="fragments/layout :: footer"></footer>
+</body>
+
+</html>

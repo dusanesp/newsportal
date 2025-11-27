@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/layout :: head(title='Edit Article')"></head>
+
+<!-- Include Summernote CSS -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+    <nav th:replace="fragments/layout :: header"></nav>
+
+    <div class="container mx-auto py-8 grow">
+        <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800"
+                th:text="${article.id != null} ? 'Edit Article' : 'Create New Article'">
+                Create New Article
+            </h2>
+
+            <form th:action="${article.id != null} ? @{'/article/edit/' + ${article.id}} : @{/article/add}"
+                th:object="${article}" method="post" enctype="multipart/form-data">
+
+                <!-- Hidden ID field for edit -->
+                <input type="hidden" th:field="*{id}" th:if="${article.id != null}" />
+
+                <!-- Error Message Display -->
+                <div th:if="${error}" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <p th:text="${error}"></p>
+                </div>
+
+                <!-- Title -->
+                <div class="mb-6">
+                    <label for="title" class="block text-gray-700 font-bold mb-2">Article Title *</label>
+                    <input type="text" id="title" th:field="*{title}" maxlength="100"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        placeholder="Enter article title" required>
+                    <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-red-600 text-sm mt-1"></p>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-6">
+                    <label for="category" class="block text-gray-700 font-bold mb-2">Category *</label>
+                    <select id="category" name="categoryName"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required>
+                        <option value="" disabled th:selected="${category == null}">Select a category</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"
+                            th:selected="${category != null and category == cat.name}">
+                            Category
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Tags -->
+                <div class="mb-6">
+                    <label for="tags" class="block text-gray-700 font-bold mb-2">Tags</label>
+                    <input type="text" id="tags" name="tagString" th:value="${tagString}"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        placeholder="Enter tags separated by commas (e.g., tech, news, science)">
+                    <p class="text-gray-600 text-sm mt-1">Separate tags with commas</p>
+                </div>
+
+                <!-- Article Image -->
+                <div class="mb-6">
+                    <label for="image" class="block text-gray-700 font-bold mb-2">Article Image</label>
+
+                    <!-- Current image preview for edit mode -->
+                    <div th:if="${article.id != null and article.imageUrl != null}" class="mb-3">
+                        <p class="text-sm text-gray-600 mb-2">Current Image:</p>
+                        <img th:src="@{${article.imageUrl}}" alt="Current article image"
+                            class="w-48 h-32 object-cover rounded border">
+                        <label class="inline-flex items-center mt-2">
+                            <input type="checkbox" name="removeImage" value="true" class="mr-2">
+                            <span class="text-sm text-gray-700">Remove current image</span>
+                        </label>
+                    </div>
+
+                    <!-- File upload input -->
+                    <input type="file" id="image" name="image" accept="image/*"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <p class="text-gray-600 text-sm mt-1">
+                        <i class="fas fa-info-circle"></i> Optional. Maximum file size: 5MB. Supported formats: JPG,
+                        PNG, WEBP
+                    </p>
+
+                    <!-- Image preview -->
+                    <div id="imagePreview" class="mt-3 hidden">
+                        <p class="text-sm text-gray-600 mb-2">New Image Preview:</p>
+                        <img id="previewImg" class="w-48 h-32 object-cover rounded border" alt="Image preview">
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div class="mb-6">
+                    <label for="preview" class="block text-gray-700 font-bold mb-2">Preview *</label>
+                    <textarea id="preview" th:field="*{preview}" rows="3" maxlength="255"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        placeholder="Enter a short preview/summary of the article" required></textarea>
+                    <p th:if="${#fields.hasErrors('preview')}" th:errors="*{preview}" class="text-red-600 text-sm mt-1">
+                    </p>
+                    <p class="text-gray-600 text-sm mt-1">Maximum 255 characters</p>
+                </div>
+
+                <!-- Content with Summernote -->
+                <div class="mb-6">
+                    <label for="summernote" class="block text-gray-700 font-bold mb-2">Content *</label>
+                    <textarea id="summernote" name="content" th:field="*{content}"></textarea>
+                    <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="text-red-600 text-sm mt-1">
+                    </p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-4">
+                    <button type="submit"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-700 transition">
+                        <span th:text="${article.id != null} ? 'Update Article' : 'Create Article'">Create
+                            Article</span>
+                    </button>
+                    <a th:href="${article.id != null and article.id != 0} ? @{'/article/' + ${article.id}} : @{/}"
+                        class="bg-gray-500 text-white font-bold py-2 px-6 rounded hover:bg-gray-600 transition inline-block text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Include jQuery (required for Summernote) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+    <!-- Initialize Summernote -->
+    <script>
+        $(document).ready(function () {
+            $('#summernote').summernote({
+                height: 400,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+
+            // Set category selected value for article-edit
+            var categoryValue = /*[[${category}]]*/ '';
+            if (categoryValue) {
+                $('#category').val(categoryValue);
+            }
+
+            // Image preview functionality
+            $('#image').on('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#previewImg').attr('src', e.target.result);
+                        $('#imagePreview').removeClass('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#imagePreview').addClass('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

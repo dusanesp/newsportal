@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(title)">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title th:text="${title}">Newsportal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+<nav th:fragment="header" class="bg-gray-800 p-4 mt-0 w-full z-10 top-0">
+<div class="container mx-auto flex flex-wrap items-center justify-between">
+<!-- Logo -->
+<div class="flex items-center text-white font-extrabold">
+<a class="text-white no-underline hover:text-white hover:no-underline" href="/">
+<span class="text-2xl pl-2">Newsportal</span>
+</a>
+</div>
+
+<!-- Main Navigation + Search + User Menu -->
+<div class="flex items-center space-x-6">
+<!-- Main Navigation Links -->
+<ul class="flex items-center space-x-4">
+<li>
+<a class="text-gray-300 hover:text-white transition" href="/">Home</a>
+</li>
+<li>
+<a class="text-gray-300 hover:text-white transition" href="/about">About</a>
+</li>
+<li>
+<a class="text-gray-300 hover:text-white transition" href="/article/popular">Popular</a>
+</li>
+<li sec:authorize="hasAnyRole('ADMIN', 'AUTHOR')">
+<a class="text-gray-300 hover:text-white transition" href="/article/add">Create Article</a>
+</li>
+</ul>
+
+<!-- Search Form -->
+<form th:action="@{/search}" method="post" class="flex items-center">
+<input type="text" name="query" required placeholder="Search articles..."
+class="px-3 py-1 rounded-l bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2
+focus:ring-blue-500 text-sm w-48">
+<button type="submit"
+class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-r transition text-sm">
+Search
+</button>
+</form>
+
+<!-- User Menu -->
+<div class="flex items-center space-x-2">
+<!-- Not Authenticated -->
+<div sec:authorize="!isAuthenticated()">
+<a class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition text-sm"
+href="/login">Login</a>
+</div>
+
+<!-- Authenticated Users -->
+<div sec:authorize="isAuthenticated()" class="relative group">
+<button class="flex items-center text-gray-300 hover:text-white space-x-1 focus:outline-none">
+<i class="fas fa-user-circle text-xl"></i>
+<span sec:authentication="name">User</span>
+<i class="fas fa-chevron-down text-xs"></i>
+</button>
+
+<!-- Dropdown Menu -->
+<div
+class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-50">
+<a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
+<i class="fas fa-user mr-2"></i>Profile
+</a>
+<form th:action="@{/logout}" method="post" class="block">
+<button type="submit"
+class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
+<i class="fas fa-sign-out-alt mr-2"></i>Logout
+</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+</nav>
+
+<!-- Sidebar Fragment -->
+<div th:fragment="sidebar" class="w-full md:w-1/4 p-6 flex flex-col space-y-6">
+<!-- Categories Section -->
+<div class="bg-white shadow-md rounded-lg p-6">
+<h3 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">
+<i class="fas fa-folder mr-2 text-blue-600"></i>Categories
+</h3>
+<ul class="space-y-2">
+<li th:each="category : ${categories}">
+<a th:href="@{/category/{name}(name=${category.name})}" th:text="${category.name}"
+class="text-blue-600 hover:text-blue-800 hover:underline transition flex items-center justify-between">
+<span>Category Name</span>
+<span th:if="${category.articleCount != null}"
+class="text-xs bg-gray-200 px-2 py-1 rounded-full"
+th:text="${category.articleCount}">0</span>
+</a>
+</li>
+</ul>
+</div>
+
+<!-- Tags Section -->
+<div class="bg-white shadow-md rounded-lg p-6">
+<h3 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">
+<i class="fas fa-tags mr-2 text-blue-600"></i>Tags
+</h3>
+<div class="flex flex-wrap gap-2">
+<a th:each="tag : ${tags}" th:href="@{/tag/{name}(name=${tag})}" th:text="${tag}"
+class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full hover:bg-blue-200 transition">Tag</a>
+</div>
+</div>
+
+<!-- Top Viewed Articles Section (if available) -->
+<div th:if="${topViewedArticles != null and !topViewedArticles.isEmpty()}"
+class="bg-white shadow-md rounded-lg p-6">
+<h3 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">
+<i class="fas fa-fire mr-2 text-orange-600"></i>Top Viewed
+</h3>
+<ul class="space-y-3">
+<li th:each="article, iterStat : ${topViewedArticles}">
+<a th:href="@{/article/{id}(id=${article.id})}"
+class="block hover:bg-gray-50 rounded p-2 transition">
+<div class="flex items-start space-x-2">
+<span class="text-blue-600 font-bold text-lg" th:text="${iterStat.count}">1</span>
+<div class="flex-1">
+<p class="text-sm font-semibold text-gray-800 line-clamp-2 hover:text-blue-600"
+th:text="${article.title}">Article Title</p>
+<p class="text-xs text-gray-500 flex items-center mt-1">
+<i class="fas fa-eye mr-1"></i>
+<span th:text="${article.viewCount}">0</span> views
+</p>
+</div>
+</div>
+</a>
+</li>
+</ul>
+</div>
+</div>
+
+<footer th:fragment="footer" class="bg-gray-800 text-white p-4 mt-8 text-center">
+<p>&copy; 2025 Newsportal. All rights reserved.</p>
+</footer>
+</body>
+
+</html>
